@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoCommerce Course</title>
+
+  <!-- Google Fonts: Bricolage Grotesque · DM Sans · JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!--
+    CUSTOMIZE PER COURSE — change only the three accent variables below.
+    Options:
+      vermillion  #D94F30 / #C4432A / #FDEEE9 / #E8836C  (default)
+      coral       #E06B56 / #C85A47 / #FDECEA / #E89585
+      teal        #2A7B9B / #1F6280 / #E4F2F7 / #5A9DB8
+      amber       #D4A843 / #BF9530 / #FDF5E0 / #E0C070
+      forest      #2D8B55 / #226B41 / #E8F5EE / #5AAD7A
+  -->
+  <style>
+    :root {
+      --color-accent:       #2A7B9B;
+      --color-accent-hover: #1F6280;
+      --color-accent-light: #E4F2F7;
+      --color-accent-muted: #5A9DB8;
+    }
+  </style>
+
+  <script src="main.js" defer></script>
+</head>
+<body>
+
+  <nav class="nav" id="nav">
+    <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="nav-inner">
+      <span class="nav-title">GoCommerce Course</span>
+      <div class="nav-dots" id="nav-dots" role="tablist">
+        <!--
+          One <button> per module. Replace MODULE_N_NAME with the actual module title.
+
+          <button class="nav-dot" data-target="module-1" data-tooltip="MODULE_1_NAME" role="tab" aria-label="Module 1: MODULE_1_NAME"></button>
+          <button class="nav-dot" data-target="module-2" data-tooltip="MODULE_2_NAME" role="tab" aria-label="Module 2: MODULE_2_NAME"></button>
+          ...
+        -->
+        <button class="nav-dot" data-target="module-1" data-tooltip="Intro & Architecture" role="tab" aria-label="Module 1: Intro & Architecture"></button>
+        <button class="nav-dot" data-target="module-2" data-tooltip="Routing & Middleware" role="tab" aria-label="Module 2: Routing & Middleware"></button>
+        <button class="nav-dot" data-target="module-3" data-tooltip="Cart & Models" role="tab" aria-label="Module 3: Cart & Models"></button>
+        <button class="nav-dot" data-target="module-4" data-tooltip="Payments" role="tab" aria-label="Module 4: Payments"></button>
+        <button class="nav-dot" data-target="module-5" data-tooltip="Downloads & Coupons" role="tab" aria-label="Module 5: Downloads & Coupons"></button>
+        <button class="nav-dot" data-target="module-6" data-tooltip="Webhooks & Emails" role="tab" aria-label="Module 6: Webhooks & Emails"></button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main">
+    <!-- modules/*.html content is assembled here by build.sh -->
+<section class="module" id="module-1">
+  <div class="module-inner">
+    <div class="module-header">
+      <div class="module-eyebrow">Module 1</div>
+      <h2 class="module-title">The Checkout Journey</h2>
+    </div>
+
+    <div class="module-content">
+      <p>Have you ever wondered what happens under the hood when a user clicks "Buy" on a static website? Static sites can't securely process payments or manage inventory on their own.</p>
+
+      <p>That's where GoCommerce steps in. Think of GoCommerce as a highly efficient checkout clerk at a specialized boutique. The clerk coordinates between the customer, the bank, and the stockroom without ever moving from the register.</p>
+
+      <div class="insight-box">
+        <h4 class="insight-title">The Bridge</h4>
+        <p>GoCommerce is an <span class="term" data-definition="Application Programming Interface - a way for different software systems to talk to each other.">API</span> that bridges the gap between static pages (like a Gatsby or Next.js site) and dynamic backend services (like databases and payment gateways).</p>
+      </div>
+
+      <p>Let's look at the main structure that holds this all together:</p>
+
+      <div class="code-translation">
+        <div class="code-column">
+          <div class="code-header">api/api.go</div>
+          <pre><code>type API struct {
+	handler http.Handler
+	db      *gorm.DB
+	config  *conf.Configuration
+	mailer  mailer.Mailer
+	version string
+	ext     *extensions
+}</code></pre>
+        </div>
+        <div class="translation-column">
+          <div class="translation-step" data-lines="2">
+            <span class="step-badge">1</span>
+            <strong>The Router:</strong> <code>handler</code> manages all the incoming web requests.
+          </div>
+          <div class="translation-step" data-lines="3">
+            <span class="step-badge">2</span>
+            <strong>The Storage:</strong> <code>db</code> connects to the database to save orders and items.
+          </div>
+          <div class="translation-step" data-lines="5">
+            <span class="step-badge">3</span>
+            <strong>The Postman:</strong> <code>mailer</code> sends out order receipts and notifications.
+          </div>
+        </div>
+      </div>
+
+      <p>Understanding this flow makes debugging "failed to charge" or "didn't receive email" bugs much easier. Here's exactly how an order travels through the system.</p>
+
+      <div class="flow-animation" data-steps='[
+        {"from": "client", "to": "gocommerce", "label": "1. Sends Order details"},
+        {"from": "gocommerce", "to": "gocommerce", "label": "2. Calculates VAT / Tax"},
+        {"from": "gocommerce", "to": "stripe", "label": "3. Processes Payment"},
+        {"from": "stripe", "to": "gocommerce", "label": "4. Returns Success"},
+        {"from": "gocommerce", "to": "db", "label": "5. Saves to Database"},
+        {"from": "gocommerce", "to": "mailer", "label": "6. Triggers Receipt Email"}
+      ]'>
+        <div class="flow-actors">
+          <div class="flow-actor" data-id="client">💻 Client</div>
+          <div class="flow-actor" data-id="gocommerce">⚙️ GoCommerce</div>
+          <div class="flow-actor" data-id="stripe">💳 Stripe</div>
+          <div class="flow-actor" data-id="db">🗄️ Database</div>
+          <div class="flow-actor" data-id="mailer">✉️ Mailer</div>
+        </div>
+        <div class="flow-lines"></div>
+        <div class="flow-packet"></div>
+        <div class="flow-controls">
+          <button class="btn btn-secondary flow-prev">Previous</button>
+          <span class="flow-step-display">Step 1 / 6</span>
+          <button class="btn btn-primary flow-next">Next</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-2">
+  <div class="module-inner">
+    <div class="module-header">
+      <div class="module-eyebrow">Module 2</div>
+      <h2 class="module-title">Routing & Middleware</h2>
+    </div>
+
+    <div class="module-content">
+      <p>Before GoCommerce can process an order, it has to safely receive the request. How does it know who is calling and what they want?</p>
+
+      <p>Think of the API Layer as a busy reception desk. The receptionist checks your ID (Middleware) before handing you the room key (Context) and pointing you to your meeting (Handler).</p>
+
+      <div class="chat-container" id="chat-routing">
+        <div class="chat-messages">
+          <div class="chat-message right">
+            <div class="chat-bubble">Hey, I need the /settings!</div>
+            <div class="chat-sender">💻 Client</div>
+          </div>
+          <div class="chat-message left">
+            <div class="chat-bubble">Hold on, let me check with security...</div>
+            <div class="chat-sender">🚦 Router</div>
+          </div>
+          <div class="chat-message left">
+            <div class="chat-bubble">Checked ID. They are clear. Here is the DB Context they'll need.</div>
+            <div class="chat-sender">🛡️ Middleware</div>
+          </div>
+          <div class="chat-message left">
+            <div class="chat-bubble">Great, proceed to the Settings Handler!</div>
+            <div class="chat-sender">🚦 Router</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary chat-next-btn">Next Message</button>
+      </div>
+
+      <div class="insight-box">
+        <h4 class="insight-title">The Power of Context</h4>
+        <p>Because <span class="term" data-definition="A function that runs before the main request handler, often used for logging, authentication, or modifying the request.">middleware</span> injects context, when building new features you don't need to manually pass the database connection around. You simply grab it from the request context!</p>
+      </div>
+
+      <p>Let's look at exactly how the middleware injects this context:</p>
+
+      <div class="code-translation">
+        <div class="code-column">
+          <div class="code-header">api/router.go</div>
+          <pre><code>func (m middlewareHandler) serve(next http.Handler, w http.ResponseWriter, r *http.Request) {
+	ctx, err := m(w, r)
+	if err != nil {
+		handleError(err, w, r)
+		return
+	}
+	if ctx != nil {
+		r = r.WithContext(ctx)
+	}
+	next.ServeHTTP(w, r)
+}</code></pre>
+        </div>
+        <div class="translation-column">
+          <div class="translation-step" data-lines="2-6">
+            <span class="step-badge">1</span>
+            <strong>Run the middleware:</strong> First, we run the custom middleware logic. If it fails (like a bad token), we handle the error immediately and stop.
+          </div>
+          <div class="translation-step" data-lines="7-9">
+            <span class="step-badge">2</span>
+            <strong>Attach Context:</strong> If the middleware returns a new context (like a database connection), we attach it to the original request using <code>WithContext</code>.
+          </div>
+          <div class="translation-step" data-lines="10">
+            <span class="step-badge">3</span>
+            <strong>Pass the baton:</strong> Finally, we call <code>next.ServeHTTP</code> to pass the request to the next handler in the chain.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-3">
+  <div class="module-inner">
+    <div class="module-header">
+      <div class="module-eyebrow">Module 3</div>
+      <h2 class="module-title">Managing the Cart</h2>
+    </div>
+
+    <div class="module-content">
+      <p>An order is more than just a total amount; it's a collection of addresses, products, and calculations. Think of it as a detailed filing cabinet where every folder (Order) has specific sheets inside.</p>
+
+      <p>In GoCommerce, these entities are represented in the <code>models/</code> directory.</p>
+
+      <div class="file-tree">
+        <div class="ft-folder open">
+          <span class="ft-name">models/</span>
+          <span class="ft-desc">Core data structures</span>
+          <div class="ft-children">
+            <div class="ft-file">
+              <span class="ft-name">order.go</span>
+              <span class="ft-desc">The main folder holding the cart</span>
+            </div>
+            <div class="ft-file">
+              <span class="ft-name">line_item.go</span>
+              <span class="ft-desc">Individual products inside the order</span>
+            </div>
+            <div class="ft-file">
+              <span class="ft-name">address.go</span>
+              <span class="ft-desc">Where the order is going</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p>Let's look at the Order <span class="term" data-definition="A collection of fields in Go, similar to an object in JavaScript or a class without methods in other languages.">struct</span>, which defines exactly how an order is saved and sent as JSON:</p>
+
+      <div class="code-translation">
+        <div class="code-column">
+          <div class="code-header">models/order.go</div>
+          <pre><code>type Order struct {
+	ID              string       `json:"id"`
+	LineItems       []LineItem   `json:"line_items"`
+	SubTotal        uint64       `json:"sub_total"`
+	Taxes           uint64       `json:"taxes"`
+	Total           uint64       `json:"total"`
+	Email           string       `json:"email"`
+	ShippingAddress *Address     `json:"shipping_address,omitempty"`
+	BillingAddress  *Address     `json:"billing_address,omitempty"`
+}</code></pre>
+        </div>
+        <div class="translation-column">
+          <div class="translation-step" data-lines="3">
+            <span class="step-badge">1</span>
+            <strong>The Products:</strong> <code>LineItems</code> is an array of the individual items purchased.
+          </div>
+          <div class="translation-step" data-lines="4-6">
+            <span class="step-badge">2</span>
+            <strong>The Math:</strong> Totals and taxes are stored as <code>uint64</code> (unsigned 64-bit integers) representing cents, to avoid floating point math errors!
+          </div>
+          <div class="translation-step" data-lines="8-9">
+            <span class="step-badge">3</span>
+            <strong>The Locations:</strong> Pointers to Address structs. The <code>omitempty</code> tag means if they aren't provided, they won't show up in the JSON response at all.
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz-container drag-drop-quiz" data-correct-msg="Exactly! The struct fields match the JSON payload." data-error-msg="Not quite. Look at the struct tags to see what maps to what.">
+        <h4 class="quiz-title">Match the JSON keys to their struct definitions</h4>
+
+        <div class="dnd-items">
+          <div class="dnd-item" draggable="true" data-id="item1">"line_items"</div>
+          <div class="dnd-item" draggable="true" data-id="item2">"total"</div>
+          <div class="dnd-item" draggable="true" data-id="item3">"shipping_address"</div>
+        </div>
+
+        <div class="dnd-targets">
+          <div class="dnd-target" data-accepts="item3">
+            <span class="target-label">Pointer to an Address</span>
+          </div>
+          <div class="dnd-target" data-accepts="item1">
+            <span class="target-label">Array of LineItem structs</span>
+          </div>
+          <div class="dnd-target" data-accepts="item2">
+            <span class="target-label">Unsigned integer (cents)</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary check-quiz-btn" disabled>Check Answers</button>
+        <div class="quiz-feedback"></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-4">
+  <div class="module-inner">
+    <div class="module-header">
+      <div class="module-eyebrow">Module 4</div>
+      <h2 class="module-title">Taking the Money</h2>
+    </div>
+
+    <div class="module-content">
+      <p>An order is just a wishlist until the money actually moves. But managing different payment gateways can turn your code into a messy knot of if/else statements.</p>
+
+      <p>GoCommerce solves this by using a universal credit card terminal metaphor. It defines an <span class="term" data-definition="A contract in Go that says 'any struct can be used here as long as it has these specific methods.'">interface</span> that any payment provider must follow.</p>
+
+      <div class="code-translation">
+        <div class="code-column">
+          <div class="code-header">payments/payments.go</div>
+          <pre><code>type Provider interface {
+	Charge(*models.Order, *models.Transaction) error
+	Refund(*models.Transaction) error
+	Name() string
+}</code></pre>
+        </div>
+        <div class="translation-column">
+          <div class="translation-step" data-lines="2">
+            <span class="step-badge">1</span>
+            <strong>Take Money:</strong> Any provider must be able to charge an Order and update the Transaction.
+          </div>
+          <div class="translation-step" data-lines="3">
+            <span class="step-badge">2</span>
+            <strong>Give Money Back:</strong> They must also support refunding a specific transaction.
+          </div>
+          <div class="translation-step" data-lines="4">
+            <span class="step-badge">3</span>
+            <strong>Identify:</strong> And they must be able to tell GoCommerce their name (e.g., "stripe").
+          </div>
+        </div>
+      </div>
+
+      <p>Because of this interface, GoCommerce can easily swap or support multiple providers:</p>
+
+      <div class="icon-rows">
+        <div class="icon-row">
+          <div class="icon-circle" style="background: var(--color-actor-1)">💳</div>
+          <div>
+            <strong>Provider Interface</strong>
+            <p>The core contract expected by the API</p>
+          </div>
+        </div>
+        <div class="icon-row">
+          <div class="icon-circle" style="background: var(--color-actor-2)">🔵</div>
+          <div>
+            <strong>Stripe</strong>
+            <p>Concrete implementation that talks to Stripe's API</p>
+          </div>
+        </div>
+        <div class="icon-row">
+          <div class="icon-circle" style="background: var(--color-actor-3)">🅿️</div>
+          <div>
+            <strong>PayPal</strong>
+            <p>Concrete implementation that talks to PayPal's API</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz-container mc-quiz">
+        <h4 class="quiz-title">What happens if the `Charge` method returns an error?</h4>
+        <div class="mc-options">
+          <button class="mc-option" data-correct="false">
+            <span class="mc-bubble"></span>
+            The entire order is deleted from the database.
+          </button>
+          <button class="mc-option" data-correct="true">
+            <span class="mc-bubble"></span>
+            The transaction is marked as failed, but the order remains.
+          </button>
+          <button class="mc-option" data-correct="false">
+            <span class="mc-bubble"></span>
+            The application crashes and restarts.
+          </button>
+        </div>
+        <div class="quiz-feedback" data-correct-msg="Correct! The API gracefully handles the error, updates the transaction state, and tells the client the payment failed." data-error-msg="Not quite. We don't want to lose the order data, nor do we want to crash!"></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-5">
+  <div class="module-inner">
+    <div class="module-header">
+      <div class="module-eyebrow">Module 5</div>
+      <h2 class="module-title">Delivering the Goods</h2>
+    </div>
+
+    <div class="module-content">
+      <p>How do you securely sell a PDF or eBook if your site is just static HTML? You can't just put a public link to the file on your site!</p>
+
+      <p>GoCommerce acts as a secure vault. It uses <span class="term" data-definition="JSON Web Tokens - a secure, encrypted string that proves who you are or what you have permission to do without needing a database lookup every time.">JWTs</span> as temporary, verifiable tickets that grant access to downloads.</p>
+
+      <div class="step-cards">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Customer Buys Product</strong>
+            <p>The payment succeeds and the order is marked paid.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>GoCommerce Mints a Token</strong>
+            <p>A JWT is created specifically for that file and that user.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>User Clicks Link</strong>
+            <p>The email receipt contains a URL with the JWT embedded in it.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>Validation & Delivery</strong>
+            <p>GoCommerce verifies the token signature. If valid, it serves the file.</p>
+          </div>
+        </div>
+      </div>
+
+      <p>Here is the exact code where GoCommerce "mints" that ticket:</p>
+
+      <div class="code-translation">
+        <div class="code-column">
+          <div class="code-header">api/download.go</div>
+          <pre><code>claims := jwt.StandardClaims{
+	Id:        dl.ID,
+	Subject:   "download",
+	ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+}
+token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+tokenString, err := token.SignedString([]byte(config.JWT.Secret))</code></pre>
+        </div>
+        <div class="translation-column">
+          <div class="translation-step" data-lines="1-5">
+            <span class="step-badge">1</span>
+            <strong>The Claims:</strong> The token clearly states what it's for (the specific download ID) and when it expires (24 hours from now).
+          </div>
+          <div class="translation-step" data-lines="6">
+            <span class="step-badge">2</span>
+            <strong>The Method:</strong> We choose HS256, a fast and secure algorithm for signing tokens.
+          </div>
+          <div class="translation-step" data-lines="8">
+            <span class="step-badge">3</span>
+            <strong>The Signature:</strong> We sign the ticket using our secret configuration key. If anyone tampers with the token, the signature will be invalid!
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-6">
+  <div class="module-inner">
+    <div class="module-header">
+      <div class="module-eyebrow">Module 6</div>
+      <h2 class="module-title">Closing the Loop</h2>
+    </div>
+
+    <div class="module-content">
+      <p>The transaction is paid, the digital ticket is minted, and the data is saved in the database. But the customer doesn't know any of that yet!</p>
+
+      <p>We need a post-event wrap-up where the organizer sends out thank you notes (Emails) and tells the external systems that the order is complete (<span class="term" data-definition="An automated HTTP POST request sent from one app to another when a specific event happens.">Webhooks</span>).</p>
+
+      <div class="insight-box">
+        <h4 class="insight-title">Asynchronous by default</h4>
+        <p>GoCommerce tries to send emails without blocking the main web request. You don't want a user waiting for the page to load just because the SMTP server is slow!</p>
+      </div>
+
+      <p>Here is how the Mailer prepares to send the confirmation receipt to the customer:</p>
+
+      <div class="code-translation">
+        <div class="code-column">
+          <div class="code-header">mailer/mailer.go</div>
+          <pre><code>func (m *mailer) OrderConfirmation(order *models.Order) error {
+	m.log.Debugf("Sending order confirmation for %v", order.ID)
+
+	subject := m.config.Subjects.OrderConfirmation
+	if subject == "" {
+		subject = "Order Confirmation"
+	}
+
+	return m.sendEmail(order.Email, subject, "order_confirmation", order)
+}</code></pre>
+        </div>
+        <div class="translation-column">
+          <div class="translation-step" data-lines="2">
+            <span class="step-badge">1</span>
+            <strong>Log the attempt:</strong> Always log before an external action so you can trace errors later.
+          </div>
+          <div class="translation-step" data-lines="4-7">
+            <span class="step-badge">2</span>
+            <strong>Dynamic Subject:</strong> It checks the configuration to see if the merchant set a custom subject line. If not, it falls back to a default.
+          </div>
+          <div class="translation-step" data-lines="9">
+            <span class="step-badge">3</span>
+            <strong>Send it off:</strong> It passes the customer's email, the subject, the name of the HTML template to use, and the full <code>Order</code> object so the template can render the line items.
+          </div>
+        </div>
+      </div>
+
+      <p>Congratulations! You've just followed an order all the way from the user's browser, through the GoCommerce API, into the database, through the payment processor, and finally back out as an email receipt.</p>
+
+      <p>You now understand the big picture of GoCommerce and are ready to dive into the codebase and start building!</p>
+    </div>
+  </div>
+</section>
+  </main>
+
+</body>
+</html>

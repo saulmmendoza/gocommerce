@@ -1,0 +1,93 @@
+<section class="module" id="module-3">
+  <div class="module-inner">
+    <div class="module-header">
+      <div class="module-eyebrow">Module 3</div>
+      <h2 class="module-title">Managing the Cart</h2>
+    </div>
+
+    <div class="module-content">
+      <p>An order is more than just a total amount; it's a collection of addresses, products, and calculations. Think of it as a detailed filing cabinet where every folder (Order) has specific sheets inside.</p>
+
+      <p>In GoCommerce, these entities are represented in the <code>models/</code> directory.</p>
+
+      <div class="file-tree">
+        <div class="ft-folder open">
+          <span class="ft-name">models/</span>
+          <span class="ft-desc">Core data structures</span>
+          <div class="ft-children">
+            <div class="ft-file">
+              <span class="ft-name">order.go</span>
+              <span class="ft-desc">The main folder holding the cart</span>
+            </div>
+            <div class="ft-file">
+              <span class="ft-name">line_item.go</span>
+              <span class="ft-desc">Individual products inside the order</span>
+            </div>
+            <div class="ft-file">
+              <span class="ft-name">address.go</span>
+              <span class="ft-desc">Where the order is going</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p>Let's look at the Order <span class="term" data-definition="A collection of fields in Go, similar to an object in JavaScript or a class without methods in other languages.">struct</span>, which defines exactly how an order is saved and sent as JSON:</p>
+
+      <div class="code-translation">
+        <div class="code-column">
+          <div class="code-header">models/order.go</div>
+          <pre><code>type Order struct {
+	ID              string       `json:"id"`
+	LineItems       []LineItem   `json:"line_items"`
+	SubTotal        uint64       `json:"sub_total"`
+	Taxes           uint64       `json:"taxes"`
+	Total           uint64       `json:"total"`
+	Email           string       `json:"email"`
+	ShippingAddress *Address     `json:"shipping_address,omitempty"`
+	BillingAddress  *Address     `json:"billing_address,omitempty"`
+}</code></pre>
+        </div>
+        <div class="translation-column">
+          <div class="translation-step" data-lines="3">
+            <span class="step-badge">1</span>
+            <strong>The Products:</strong> <code>LineItems</code> is an array of the individual items purchased.
+          </div>
+          <div class="translation-step" data-lines="4-6">
+            <span class="step-badge">2</span>
+            <strong>The Math:</strong> Totals and taxes are stored as <code>uint64</code> (unsigned 64-bit integers) representing cents, to avoid floating point math errors!
+          </div>
+          <div class="translation-step" data-lines="8-9">
+            <span class="step-badge">3</span>
+            <strong>The Locations:</strong> Pointers to Address structs. The <code>omitempty</code> tag means if they aren't provided, they won't show up in the JSON response at all.
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz-container drag-drop-quiz" data-correct-msg="Exactly! The struct fields match the JSON payload." data-error-msg="Not quite. Look at the struct tags to see what maps to what.">
+        <h4 class="quiz-title">Match the JSON keys to their struct definitions</h4>
+
+        <div class="dnd-items">
+          <div class="dnd-item" draggable="true" data-id="item1">"line_items"</div>
+          <div class="dnd-item" draggable="true" data-id="item2">"total"</div>
+          <div class="dnd-item" draggable="true" data-id="item3">"shipping_address"</div>
+        </div>
+
+        <div class="dnd-targets">
+          <div class="dnd-target" data-accepts="item3">
+            <span class="target-label">Pointer to an Address</span>
+          </div>
+          <div class="dnd-target" data-accepts="item1">
+            <span class="target-label">Array of LineItem structs</span>
+          </div>
+          <div class="dnd-target" data-accepts="item2">
+            <span class="target-label">Unsigned integer (cents)</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary check-quiz-btn" disabled>Check Answers</button>
+        <div class="quiz-feedback"></div>
+      </div>
+
+    </div>
+  </div>
+</section>

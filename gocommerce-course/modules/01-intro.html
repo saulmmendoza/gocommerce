@@ -1,0 +1,76 @@
+<section class="module" id="module-1">
+  <div class="module-inner">
+    <div class="module-header">
+      <div class="module-eyebrow">Module 1</div>
+      <h2 class="module-title">The Checkout Journey</h2>
+    </div>
+
+    <div class="module-content">
+      <p>Have you ever wondered what happens under the hood when a user clicks "Buy" on a static website? Static sites can't securely process payments or manage inventory on their own.</p>
+
+      <p>That's where GoCommerce steps in. Think of GoCommerce as a highly efficient checkout clerk at a specialized boutique. The clerk coordinates between the customer, the bank, and the stockroom without ever moving from the register.</p>
+
+      <div class="insight-box">
+        <h4 class="insight-title">The Bridge</h4>
+        <p>GoCommerce is an <span class="term" data-definition="Application Programming Interface - a way for different software systems to talk to each other.">API</span> that bridges the gap between static pages (like a Gatsby or Next.js site) and dynamic backend services (like databases and payment gateways).</p>
+      </div>
+
+      <p>Let's look at the main structure that holds this all together:</p>
+
+      <div class="code-translation">
+        <div class="code-column">
+          <div class="code-header">api/api.go</div>
+          <pre><code>type API struct {
+	handler http.Handler
+	db      *gorm.DB
+	config  *conf.Configuration
+	mailer  mailer.Mailer
+	version string
+	ext     *extensions
+}</code></pre>
+        </div>
+        <div class="translation-column">
+          <div class="translation-step" data-lines="2">
+            <span class="step-badge">1</span>
+            <strong>The Router:</strong> <code>handler</code> manages all the incoming web requests.
+          </div>
+          <div class="translation-step" data-lines="3">
+            <span class="step-badge">2</span>
+            <strong>The Storage:</strong> <code>db</code> connects to the database to save orders and items.
+          </div>
+          <div class="translation-step" data-lines="5">
+            <span class="step-badge">3</span>
+            <strong>The Postman:</strong> <code>mailer</code> sends out order receipts and notifications.
+          </div>
+        </div>
+      </div>
+
+      <p>Understanding this flow makes debugging "failed to charge" or "didn't receive email" bugs much easier. Here's exactly how an order travels through the system.</p>
+
+      <div class="flow-animation" data-steps='[
+        {"from": "client", "to": "gocommerce", "label": "1. Sends Order details"},
+        {"from": "gocommerce", "to": "gocommerce", "label": "2. Calculates VAT / Tax"},
+        {"from": "gocommerce", "to": "stripe", "label": "3. Processes Payment"},
+        {"from": "stripe", "to": "gocommerce", "label": "4. Returns Success"},
+        {"from": "gocommerce", "to": "db", "label": "5. Saves to Database"},
+        {"from": "gocommerce", "to": "mailer", "label": "6. Triggers Receipt Email"}
+      ]'>
+        <div class="flow-actors">
+          <div class="flow-actor" data-id="client">💻 Client</div>
+          <div class="flow-actor" data-id="gocommerce">⚙️ GoCommerce</div>
+          <div class="flow-actor" data-id="stripe">💳 Stripe</div>
+          <div class="flow-actor" data-id="db">🗄️ Database</div>
+          <div class="flow-actor" data-id="mailer">✉️ Mailer</div>
+        </div>
+        <div class="flow-lines"></div>
+        <div class="flow-packet"></div>
+        <div class="flow-controls">
+          <button class="btn btn-secondary flow-prev">Previous</button>
+          <span class="flow-step-display">Step 1 / 6</span>
+          <button class="btn btn-primary flow-next">Next</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
