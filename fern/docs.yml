@@ -12,6 +12,8 @@ navigation:
     contents:
       - page: Deep Dive
         path: ./pages/deep-dive.md
+      - page: Multi Instances
+        path: ./pages/multi-instances.md
   - api: API Reference
 colors:
   accentPrimary: '#ffffff'
