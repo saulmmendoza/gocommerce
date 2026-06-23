@@ -23,10 +23,26 @@ type Provider interface {
 	NewRefunder(ctx context.Context, r *http.Request, log logrus.FieldLogger) (Refunder, error)
 	NewPreauthorizer(ctx context.Context, r *http.Request, log logrus.FieldLogger) (Preauthorizer, error)
 	NewConfirmer(ctx context.Context, r *http.Request, log logrus.FieldLogger) (Confirmer, error)
+	NewCheckouter(ctx context.Context, r *http.Request, log logrus.FieldLogger) (Checkouter, error)
+	WebhookHandler(ctx context.Context, r *http.Request, log logrus.FieldLogger) (*WebhookResult, error)
 }
 
 // Charger wraps the Charge method which creates new payments with the provider.
 type Charger func(amount uint64, currency string, order *models.Order, invoiceNumber int64) (string, error)
+
+// Checkouter wraps the Checkout method which creates a new checkout session.
+// Returns the session ID and the checkout URL.
+type Checkouter func(amount uint64, currency string, order *models.Order) (string, string, error)
+
+// WebhookResult represents the result of processing a webhook
+type WebhookResult struct {
+	OrderID       string
+	InstanceID    string
+	TransactionID string
+	Amount        uint64
+	Currency      string
+	Status        string // "paid", "failed", etc.
+}
 
 // Refunder wraps the Refund method which refunds payments with the provider.
 type Refunder func(transactionID string, amount uint64, currency string) (string, error)

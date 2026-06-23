@@ -835,3 +835,11 @@ func (t trackingStripeBackend) CallRaw(method, path, key string, body *form.Valu
 }
 
 func (t trackingStripeBackend) SetMaxNetworkRetries(maxNetworkRetries int) {}
+
+func (mp *memProvider) NewCheckouter(ctx context.Context, r *http.Request, log logrus.FieldLogger) (payments.Checkouter, error) {
+	return nil, nil
+}
+
+func (mp *memProvider) WebhookHandler(ctx context.Context, r *http.Request, log logrus.FieldLogger) (*payments.WebhookResult, error) {
+	return nil, nil
+}

@@ -17,6 +17,7 @@ import (
 
 type stripePaymentProvider struct {
 	client *client.API
+	config Config
 }
 
 type stripeBodyParams struct {
@@ -27,6 +28,7 @@ type stripeBodyParams struct {
 // Config contains the Stripe-specific configuration for payment providers.
 type Config struct {
 	SecretKey string `mapstructure:"secret_key" json:"secret_key"`
+	WebhookSecret string `mapstructure:"webhook_secret" json:"webhook_secret"`
 }
 
 // NewPaymentProvider creates a new Stripe payment provider using the provided configuration.
@@ -37,6 +39,7 @@ func NewPaymentProvider(config Config) (payments.Provider, error) {
 
 	s := stripePaymentProvider{
 		client: &client.API{},
+		config: config,
 	}
 	s.client.Init(config.SecretKey, nil)
 	return &s, nil

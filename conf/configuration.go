@@ -65,9 +65,10 @@ type Configuration struct {
 
 	Payment struct {
 		Stripe struct {
-			Enabled   bool   `json:"enabled"`
-			PublicKey string `json:"public_key" split_words:"true"`
-			SecretKey string `json:"secret_key" split_words:"true"`
+			Enabled       bool   `json:"enabled"`
+			PublicKey     string `json:"public_key" split_words:"true"`
+			SecretKey     string `json:"secret_key" split_words:"true"`
+			WebhookSecret string `json:"webhook_secret" split_words:"true"`
 		} `json:"stripe"`
 		PayPal struct {
 			Enabled  bool   `json:"enabled"`
