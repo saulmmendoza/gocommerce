@@ -24,11 +24,6 @@ func (s *stripePaymentProvider) NewCheckouter(ctx context.Context, r *http.Reque
 	}
 
 	if len(bod) > 0 {
-		// Because the Stripe SDK structs use `form` tags instead of `json`,
-		// we should ideally just pass everything the client wants as custom JSON map
-		// and map it, OR let the client pass JSON and we do a custom struct mapping.
-		// As per the reviewer feedback: "parse the raw json directly"
-		// Since we only need to map a few fields, we can do this simply:
 		var rawParams map[string]interface{}
 		err = json.Unmarshal(bod, &rawParams)
 		if err != nil {
