@@ -271,7 +271,9 @@ func (m downloadRefreshItemSet) Add(item *LineItem, order *Order) {
 
 // UpdateDownloads fetches downloads for all line items and updates orders with new downloads
 func (m downloadRefreshItemSet) Update(db *gorm.DB, config *conf.Configuration, log logrus.FieldLogger) (updates []*Order, err error) {
-	// @todo: run in parallel with goroutines, lock orders with mutexes
+	var wg sync.WaitGroup
+	var updatesLock sync.Mutex
+
 	for instanceID, items := range m {
 		if config == nil {
 			if db == nil {
@@ -287,37 +289,45 @@ func (m downloadRefreshItemSet) Update(db *gorm.DB, config *conf.Configuration, 
 		}
 
 		for _, entry := range items {
-			if entry.item.Sku == "" {
-				log.Warningf(
-					"Tried updating a line item without SKU at %s. Skipped to avoid memory update in FetchMeta",
-					entry.item.Path,
-				)
-				continue
-			}
-			log.Debugf("Updating downloads for item with sku '%s'", entry.item.Sku)
-			meta, fetchErr := entry.item.FetchMeta(config.SiteURL)
-			if fetchErr != nil {
-				// item might not be offered anymore, preserve downloads
-				log.WithError(fetchErr).
-					WithFields(map[string]interface{}{
-						"path": entry.item.Path,
-						"sku":  entry.item.Sku,
-					}).
-					Warning("Fetching product metadata failed. Skipping item.")
-				continue
-			}
-			for _, order := range entry.orders {
-				downloads := entry.item.MissingDownloads(order, meta)
-				if len(downloads) == 0 {
-					continue
+			wg.Add(1)
+			go func(entry *downloadRefreshItemSetEntry, instanceConfig *conf.Configuration) {
+				defer wg.Done()
+				if entry.item.Sku == "" {
+					log.Warningf(
+						"Tried updating a line item without SKU at %s. Skipped to avoid memory update in FetchMeta",
+						entry.item.Path,
+					)
+					return
 				}
-				// @todo: Lock order mutex if run in goroutines
-				order.Downloads = append(order.Downloads, downloads...)
+				log.Debugf("Updating downloads for item with sku '%s'", entry.item.Sku)
+				meta, fetchErr := entry.item.FetchMeta(instanceConfig.SiteURL)
+				if fetchErr != nil {
+					// item might not be offered anymore, preserve downloads
+					log.WithError(fetchErr).
+						WithFields(map[string]interface{}{
+							"path": entry.item.Path,
+							"sku":  entry.item.Sku,
+						}).
+						Warning("Fetching product metadata failed. Skipping item.")
+					return
+				}
+				for _, order := range entry.orders {
+					downloads := entry.item.MissingDownloads(order, meta)
+					if len(downloads) == 0 {
+						continue
+					}
+					order.ModificationLock.Lock()
+					order.Downloads = append(order.Downloads, downloads...)
+					order.ModificationLock.Unlock()
 
-				updates = append(updates, order)
-			}
+					updatesLock.Lock()
+					updates = append(updates, order)
+					updatesLock.Unlock()
+				}
+			}(entry, config)
 		}
 	}
+	wg.Wait()
 
 	return
 }
