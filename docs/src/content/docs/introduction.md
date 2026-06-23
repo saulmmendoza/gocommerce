@@ -1,4 +1,7 @@
-# Introduction
+---
+title: Introduction
+description: Welcome to GoCommerce!
+---
 
 Welcome to GoCommerce!
 

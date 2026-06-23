@@ -1,3 +1,8 @@
+---
+title: Multi Instances
+description: How to configure and run GoCommerce in Multi-Instance mode
+---
+
 # Multi-Instance Mode
 
 GoCommerce supports a Multi-Instance mode designed specifically for operators (like Netlify or other hosting providers) who want to host multiple e-commerce stores on a single GoCommerce deployment. Instead of spinning up a separate binary for every store, one GoCommerce API handles requests for many distinct sites securely.

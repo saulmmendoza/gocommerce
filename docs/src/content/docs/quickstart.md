@@ -1,4 +1,7 @@
-# Quickstart
+---
+title: Quickstart
+description: Get GoCommerce up and running locally
+---
 
 This guide will help you get GoCommerce up and running locally for development and testing.
 

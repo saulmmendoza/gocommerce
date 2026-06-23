@@ -1,4 +1,7 @@
-# Deep Dive
+---
+title: Deep Dive
+description: Advanced configurations and features
+---
 
 This section covers more advanced configurations and features of GoCommerce, including tax calculations, payment integrations, and webhooks.
 
@@ -81,9 +84,3 @@ WEBHOOKS_SECRET=my_webhook_secret
 ```
 
 GoCommerce will sign the webhook payload with a JSON Web Token (JWT) using this secret and include it in the `X-Commerce-Signature` header. Your external service can decode and verify this JWT to ensure authenticity.
-
-## Multi-Instance Mode
-
-GoCommerce was originally designed to run on Netlify's infrastructure in a multi-tenant setup. While you generally don't need this for a single store, if you are acting as an operator (hosting multiple stores on a single GoCommerce deployment), you can enable Multi-Instance mode.
-
-In this mode, GoCommerce relies on a `OPERATOR_TOKEN` to verify requests proxied from the operator. It also exposes `/instances` endpoints to manage configuration per-tenant.
