@@ -282,3 +282,11 @@ func formatAmount(amount uint64) string {
 func (p *paypalPaymentProvider) NewConfirmer(ctx context.Context, r *http.Request, log logrus.FieldLogger) (payments.Confirmer, error) {
 	return nil, errors.New("Paypal does not provide manual 2-step confirmation")
 }
+
+func (p *paypalPaymentProvider) NewCheckouter(ctx context.Context, r *http.Request, log logrus.FieldLogger) (payments.Checkouter, error) {
+	return nil, errors.New("Paypal checkout not implemented")
+}
+
+func (p *paypalPaymentProvider) WebhookHandler(ctx context.Context, r *http.Request, log logrus.FieldLogger) (*payments.WebhookResult, error) {
+	return nil, errors.New("Paypal webhook not implemented")
+}

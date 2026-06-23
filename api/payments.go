@@ -537,7 +537,8 @@ func createPaymentProviders(c *conf.Configuration) (map[string]payments.Provider
 	provs := map[string]payments.Provider{}
 	if c.Payment.Stripe.Enabled {
 		p, err := stripe.NewPaymentProvider(stripe.Config{
-			SecretKey: c.Payment.Stripe.SecretKey,
+			SecretKey:     c.Payment.Stripe.SecretKey,
+			WebhookSecret: c.Payment.Stripe.WebhookSecret,
 		})
 		if err != nil {
 			return nil, err
@@ -556,4 +557,114 @@ func createPaymentProviders(c *conf.Configuration) (map[string]payments.Provider
 		provs[p.Name()] = p
 	}
 	return provs, nil
+}
+
+// PaymentCheckout is the endpoint for creating a payment checkout session for an order
+func (a *API) PaymentCheckout(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	log := getLogEntry(r)
+
+	params := PaymentParams{Currency: "USD"}
+	err := json.NewDecoder(r.Body).Decode(&params)
+	if err != nil {
+		return badRequestError("Could not read params: %v", err)
+	}
+
+	providerType := params.ProviderType
+	if providerType == "" {
+		return badRequestError("Creating a checkout session requires specifying a 'provider'")
+	}
+
+	db := a.DB(r)
+	orderID := chi.URLParam(r, "order_id")
+	order, httpErr := queryForOrder(db, orderID, log)
+	if httpErr != nil {
+		return httpErr
+	}
+
+	// Ensure the requester owns the order or the request is valid
+	token := gcontext.GetToken(ctx)
+	if token == nil && order.UserID != "" {
+		return unauthorizedError("You must be logged in to checkout this order")
+	} else if token != nil {
+		claims := token.Claims.(*claims.JWTClaims)
+		if order.UserID != claims.Subject {
+			return unauthorizedError("You must be logged in to checkout this order")
+		}
+	}
+
+	provider := gcontext.GetPaymentProviders(ctx)[strings.ToLower(providerType)]
+	if provider == nil {
+		return badRequestError("Payment provider '%s' not configured", providerType)
+	}
+
+	checkouter, err := provider.NewCheckouter(ctx, r, log.WithField("component", "payment_provider"))
+	if err != nil {
+		return badRequestError("Error creating payment provider checkouter: %v", err)
+	}
+
+	order.PaymentProcessor = provider.Name()
+	db.Save(order)
+
+	id, checkoutUrl, err := checkouter(order.Total, order.Currency, order)
+	if err != nil {
+		return internalServerError("Error creating checkout session: %v", err).WithInternalError(err)
+	}
+
+	return sendJSON(w, http.StatusOK, map[string]string{
+		"id":  id,
+		"url": checkoutUrl,
+	})
+}
+
+// StripeWebhook handles incoming Stripe webhooks
+func (a *API) StripeWebhook(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	log := getLogEntry(r)
+
+	provider := gcontext.GetPaymentProviders(ctx)[payments.StripeProvider]
+	if provider == nil {
+		return badRequestError("Stripe not configured")
+	}
+
+	res, err := provider.WebhookHandler(ctx, r, log)
+	if err != nil {
+		return badRequestError("Error processing webhook: %v", err)
+	}
+
+	if res != nil && res.Status == models.PaidState {
+		db := a.DB(r)
+		order, httpErr := queryForOrder(db, res.OrderID, log)
+		if httpErr != nil {
+			return httpErr
+		}
+
+		if order.PaymentState == models.PaidState {
+			w.WriteHeader(http.StatusOK)
+			return nil
+		}
+
+		tx := db.Begin()
+		trans := &models.Transaction{
+			InstanceID: order.InstanceID,
+			ID:         uuid.NewRandom().String(),
+			Amount:     res.Amount,
+			Currency:   res.Currency,
+			UserID:     order.UserID,
+			OrderID:    order.ID,
+			Type:       models.ChargeTransactionType,
+			Status:     models.PaidState,
+			ProcessorID: res.TransactionID,
+		}
+
+		paymentComplete(r, tx, trans, order)
+		if err := tx.Commit().Error; err != nil {
+			return internalServerError("Saving payment failed").WithInternalError(err)
+		}
+
+		go sendOrderConfirmation(ctx, log, trans)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	return nil
 }

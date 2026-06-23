@@ -125,6 +125,8 @@ func NewAPIWithVersion(ctx context.Context, globalConfig *conf.GlobalConfigurati
 			})
 		})
 
+		r.Post("/payments/webhook-stripe", api.StripeWebhook)
+
 		r.Route("/paypal", func(r *router) {
 			r.With(addGetBody).Post("/", api.PreauthorizePayment)
 		})
@@ -188,6 +190,7 @@ func (a *API) orderRoutes(r *router) {
 		r.Route("/payments", func(r *router) {
 			r.With(authRequired).Get("/", a.PaymentListForOrder)
 			r.With(addGetBody).Post("/", a.PaymentCreate)
+			r.With(addGetBody).Post("/checkout", a.PaymentCheckout)
 		})
 
 		r.Route("/downloads", func(r *router) {

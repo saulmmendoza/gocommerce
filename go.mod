@@ -39,6 +39,7 @@ require (
 	github.com/netlify/netlify-commons v0.32.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.3 // indirect
+	github.com/stripe/stripe-go/v74 v74.30.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
