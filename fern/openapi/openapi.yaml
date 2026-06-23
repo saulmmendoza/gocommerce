@@ -1,0 +1,400 @@
+openapi: 3.0.0
+info:
+  title: GoCommerce API
+  version: 1.0.0
+  description: A small go based API for static e-commerce sites.
+servers:
+  - url: http://localhost:9999
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+  /settings:
+    get:
+      summary: View Settings
+      responses:
+        '200':
+          description: OK
+  /orders:
+    get:
+      summary: List orders
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Create order
+      responses:
+        '200':
+          description: OK
+  /orders/{order_id}:
+    get:
+      summary: View order
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+    put:
+      summary: Update order
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /orders/{order_id}/payments:
+    get:
+      summary: List payments for order
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Create payment for order
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /orders/{order_id}/downloads:
+    get:
+      summary: List downloads for order
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /orders/{order_id}/downloads/refresh:
+    post:
+      summary: Refresh downloads for order
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /orders/{order_id}/receipt:
+    get:
+      summary: View receipt
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Resend order receipt
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /users:
+    get:
+      summary: List users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Bulk delete users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+  /users/{user_id}:
+    get:
+      summary: View user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Delete user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /users/{user_id}/payments:
+    get:
+      summary: List payments for user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /users/{user_id}/orders:
+    get:
+      summary: List orders for user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /users/{user_id}/addresses:
+    get:
+      summary: List addresses for user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Create new address
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /users/{user_id}/addresses/{addr_id}:
+    get:
+      summary: View address
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: addr_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Delete address
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: addr_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /downloads:
+    get:
+      summary: List downloads
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+  /downloads/{download_id}:
+    get:
+      summary: Get download URL
+      parameters:
+        - name: download_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /vatnumbers/{vat_number}:
+    get:
+      summary: Lookup VAT number
+      parameters:
+        - name: vat_number
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /payments:
+    get:
+      summary: List payments
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+  /payments/{payment_id}:
+    get:
+      summary: View payment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /payments/{payment_id}/refund:
+    post:
+      summary: Refund payment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /payments/{payment_id}/confirm:
+    post:
+      summary: Confirm payment
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /paypal:
+    post:
+      summary: Preauthorize PayPal payment
+      responses:
+        '200':
+          description: OK
+  /reports/sales:
+    get:
+      summary: Sales report
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+  /reports/products:
+    get:
+      summary: Products report
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+  /coupons:
+    get:
+      summary: List coupons
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+  /coupons/{coupon_code}:
+    get:
+      summary: View coupon
+      parameters:
+        - name: coupon_code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /claim:
+    post:
+      summary: Claim orders
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
